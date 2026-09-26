@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AMPS Integration Bee: Final Rounds</title>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+  body { 
+    font-family: -apple-system, sans-serif; 
+    background-color: #0f172a; 
+    color: #f8fafc; 
+    margin: 0; 
+    padding: 0; 
+  }
+  
+  /* Slides are hidden by default to prevent scrolling between them */
+  .slide { 
+    min-height: 100vh; 
+    display: none; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    text-align: center; 
+    padding: 2rem;
+    box-sizing: border-box;
+  }
+  
+  /* Only the active slide is visible */
+  .slide.active-slide {
+    display: flex;
+  }
+
+  h1 { font-size: 4.5rem; margin-bottom: 1rem; }
+  h2 { font-size: 3.5rem; color: #fbbf24; margin-bottom: 1rem; }
+  .math-container { font-size: 5rem; margin: 2rem 0; min-height: 150px; }
+  
+  /* Tabs for Selection Screen */
+  .tabs {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 2rem;
+  }
+  .tab-btn {
+    padding: 12px 24px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    background-color: #334155;
+    color: white;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    transition: 0.2s all;
+  }
+  .tab-btn.active, .tab-btn:hover {
+    background-color: #fbbf24;
+    color: #0f172a;
+  }
+  
+  /* Special Tab for Tie-Breaker */
+  .tab-btn.special {
+    background-color: #7e22ce; /* Purple theme */
+    border-color: #9333ea;
+  }
+  .tab-btn.special.active, .tab-btn.special:hover {
+    background-color: #9333ea;
+    color: white;
+    border-color: #d8b4fe;
+  }
+
+  /* Grid for the Selection Screen */
+  .grid-container {
+    display: none;
+  }
+  .grid-container.active {
+    display: block;
+  }
+  .grid { 
+    display: grid; 
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 30px; 
+    justify-items: center;
+  }
+  .grid.center-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid.center-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid.center-1 { grid-template-columns: 1fr; }
+  
+  .number-box {
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    width: 140px; 
+    height: 140px; 
+    font-size: 3.5rem; 
+    font-weight: bold;
+    background-color: #1e293b; 
+    color: #f8fafc; 
+    text-decoration: none;
+    border-radius: 20px; 
+    border: 4px solid #334155; 
+    transition: 0.2s all;
+  }
+  .number-box.final {
+    width: 250px;
+    font-size: 3rem;
+  }
+  .number-box:hover { 
+    background-color: #fbbf24; 
+    color: #0f172a; 
+    border-color: #fbbf24; 
+    transform: scale(1.05);
+  }
+  
+  /* Timer Styles */
+  .timer-container {
+    margin-bottom: 2rem;
+  }
+  .timer-display {
+    font-size: 4.5rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: #ef4444; 
+    margin-bottom: 1rem;
+    font-weight: bold;
+  }
+  .timer-controls button {
+    padding: 12px 24px;
+    font-size: 1.5rem;
+    margin: 0 10px;
+    cursor: pointer;
+    background-color: #334155;
+    color: white;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    transition: 0.2s all;
+  }
+  .timer-controls button:hover {
+    background-color: #475569;
+    border-color: #94a3b8;
+  }
+  .timer-controls button.start:hover { background-color: #166534; border-color: #22c55e; } 
+  .timer-controls button.stop:hover { background-color: #991b1b; border-color: #ef4444; } 
+  .timer-controls button.reset:hover { background-color: #ca8a04; border-color: #facc15; } 
+
+  /* Action Buttons Container */
+  .action-buttons {
+    display: flex;
+    gap: 20px;
+    margin-top: 1rem;
+    align-items: center;
+  }
+  .back-btn { 
+    padding: 15px 40px; 
+    font-size: 1.8rem; 
+    color: #94a3b8; 
+    text-decoration: none; 
+    border: 2px solid #334155; 
+    border-radius: 12px; 
+    transition: 0.2s all;
+  }
+  .back-btn:hover { 
+    background-color: #1e293b; 
+    color: #f8fafc; 
+    border-color: #94a3b8;
+  }
+  .tiebreaker-btn {
+    padding: 15px 40px;
+    font-size: 1.8rem;
+    color: #f8fafc;
+    background-color: #7e22ce;
+    text-decoration: none;
+    border: 2px solid #9333ea;
+    border-radius: 12px;
+    transition: 0.2s all;
+  }
+  .tiebreaker-btn:hover {
+    background-color: #9333ea;
+    border-color: #d8b4fe;
+    transform: scale(1.05);
+  }
+  .tiebreaker-title { color: #c084fc; }
+
+  /* Solution Styles */
+  .solution-btn {
+    padding: 15px 40px;
+    font-size: 1.8rem;
+    color: #f8fafc;
+    background-color: #059669;
+    border: 2px solid #10b981;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.2s all;
+  }
+  .solution-btn:hover {
+    background-color: #10b981;
+    border-color: #34d399;
+    transform: scale(1.05);
+  }
+  .solution-text {
+    display: none;
+    font-size: 2.2rem;
+    color: #34d399;
+    margin-top: 1.5rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    background: rgba(5, 150, 105, 0.1);
+    padding: 15px 30px;
+    border-radius: 12px;
+    border: 1px solid #10b981;
+  }
+  .solution-text.visible {
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<!-- Selection Slide -->
+<div id="selection" class="slide">
+  <h1>AMPS Integration Bee 2026</h1>
+  
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('r16')">Round of 16</button>
+    <button class="tab-btn" onclick="switchTab('qf')">Quarter Final</button>
+    <button class="tab-btn" onclick="switchTab('sf')">Semi Final</button>
+    <button class="tab-btn" onclick="switchTab('final')">Final</button>
+    <button class="tab-btn special" onclick="switchTab('tb')">Tie-Breaker</button>
+  </div>
+
+  <div id="grid-r16" class="grid-container active">
+    <div class="grid">
+      <a href="#r16_1" class="number-box">1</a>
+      <a href="#r16_2" class="number-box">2</a>
+      <a href="#r16_3" class="number-box">3</a>
+      <a href="#r16_4" class="number-box">4</a>
+      <a href="#r16_5" class="number-box">5</a>
+      <a href="#r16_6" class="number-box">6</a>
+      <a href="#r16_7" class="number-box">7</a>
+      <a href="#r16_8" class="number-box">8</a>
+    </div>
+  </div>
+
+  <div id="grid-qf" class="grid-container">
+    <div class="grid">
+      <a href="#qf_1" class="number-box">1</a>
+      <a href="#qf_2" class="number-box">2</a>
+      <a href="#qf_3" class="number-box">3</a>
+      <a href="#qf_4" class="number-box">4</a>
+    </div>
+  </div>
+
+  <div id="grid-sf" class="grid-container">
+    <div class="grid center-2">
+      <a href="#sf_1" class="number-box">1</a>
+      <a href="#sf_2" class="number-box">2</a>
+    </div>
+  </div>
+
+  <div id="grid-final" class="grid-container">
+    <div class="grid center-3">
+      <a href="#final_1" class="number-box final">Game 1</a>
+      <a href="#final_2" class="number-box final">Game 2</a>
+      <a href="#final_3" class="number-box final">Game 3</a>
+    </div>
+  </div>
+  
+  <div id="grid-tb" class="grid-container">
+    <div class="grid center-3">
+      <a href="#general_tb_1" class="number-box">1</a>
+      <a href="#general_tb_2" class="number-box">2</a>
+      <a href="#general_tb_3" class="number-box">3</a>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= ROUND OF 16 ======================= -->
+<!-- R16 Q1 -->
+<div id="r16_1" class="slide">
+  <h2>Round of 16 - Question 1</h2>
+  <div class="math-container">\[ \int\frac{\log(2026x)}{x \log x}dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#tb_r16_1" class="tiebreaker-btn" onclick="clearAllTimers()">Tie Breaker</a>
+  </div>
+  <div class="solution-text">log(2026)*log|log x| + log|x|</div>
+</div>
+<!-- TB R16 1 -->
+<div id="tb_r16_1" class="slide">
+  <h2 class="tiebreaker-title">Tie Breaker</h2>
+  <div class="math-container">\[ \int \sin x(1+\cos x)^5 \, dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#r16_1" class="back-btn" onclick="clearAllTimers()">Back to Q1</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+  </div>
+  <div class="solution-text">-(1+cos x)^6/6</div>
+</div>
+
+<!-- R16 Q2 -->
+<div id="r16_2" class="slide">
+  <h2>Round of 16 - Question 2</h2>
+  <div class="math-container">\[ \int(2 \log x+1)e^{(\log x)^{2}}dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#tb_r16_2" class="tiebreaker-btn" onclick="clearAllTimers()">Tie Breaker</a>
+  </div>
+  <div class="solution-text">x*e^((log x)^2)</div>
+</div>
+<!-- TB R16 2 -->
+<div id="tb_r16_2" class="slide">
+  <h2 class="tiebreaker-title">Tie Breaker</h2>
+  <div class="math-container">\[ \int \cos x(1+\sin x)^7 \, dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#r16_2" class="back-btn" onclick="clearAllTimers()">Back to Q2</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+  </div>
+  <div class="solution-text">(1+sin x)^8/8</div>
+</div>
+
+<!-- R16 Q3 -->
+<div id="r16_3" class="slide">
+  <h2>Round of 16 - Question 3</h2>
+  <div class="math-container">\[ \int(x \log x+2026x)dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#tb_r16_3" class="tiebreaker-btn" onclick="clearAllTimers()">Tie Breaker</a>
+  </div>
+  <div class="solution-text">(x^2/2)log x - x^2/4 + 1013 x^2</div>
+</div>
+<!-- TB R16 3 -->
+<div id="tb_r16_3" class="slide">
+  <h2 class="tiebreaker-title">Tie Breaker</h2>
+  <div class="math-container">\[ \int \frac{x^3-1}{x-1} \, dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#r16_3" class="back-btn" onclick="clearAllTimers()">Back to Q3</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+  </div>
+  <div class="solution-text">x^3/3 + x^2/2 + x</div>
+</div>
+
+<!-- R16 Q4 -->
+<div id="r16_4" class="slide">
+  <h2>Round of 16 - Question 4</h2>
+  <div class="math-container">\[ \int x \sec^{2}(2026x)dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#tb_r16_4" class="tiebreaker-btn" onclick="clearAllTimers()">Tie Breaker</a>
+  </div>
+  <div class="solution-text">x*tan(2026x)/2026 + log|cos(2026x)|/2026^2</div>
+</div>
+<!-- TB R16 4 -->
+<div id="tb_r16_4" class="slide">
+  <h2 class="tiebreaker-title">Tie Breaker</h2>
+  <div class="math-container">\[ \int_0^1\frac{x}{1+x^2} \, dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#r16_4" class="back-btn" onclick="clearAllTimers()">Back to Q4</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+  </div>
+  <div class="solution-text">(ln 2)/2</div>
+</div>
+
+<!-- R16 Q5 -->
+<div id="r16_5" class="slide">
+  <h2>Round of 16 - Question 5</h2>
+  <div class="math-container">\[ \int_{0}^{2026\pi}|\sin(2026x)|dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#tb_r16_5" class="tiebreaker-btn" onclick="clearAllTimers()">Tie Breaker</a>
+  </div>
+  <div class="solution-text">4052</div>
+</div>
+<!-- TB R16 5 -->
+<div id="tb_r16_5" class="slide">
+  <h2 class="tiebreaker-title">Tie Breaker</h2>
+  <div class="math-container">\[ \int_0^{\pi/2}\frac{\cos x}{\sin x+\cos x} \, dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#r16_5" class="back-btn" onclick="clearAllTimers()">Back to Q5</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+  </div>
+  <div class="solution-text">pi/4</div>
+</div>
+
+<!-- R16 Q6 -->
+<div id="r16_6" class="slide">
+  <h2>Round of 16 - Question 6</h2>
+  <div class="math-container">\[ \int_{0}^{1}\binom{x}{2}dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#tb_r16_6" class="tiebreaker-btn" onclick="clearAllTimers()">Tie Breaker</a>
+  </div>
+  <div class="solution-text">\[ -\frac{1}{12} \]</div>
+</div>
+<!-- TB R16 6 -->
+<div id="tb_r16_6" class="slide">
+  <h2 class="tiebreaker-title">Tie Breaker</h2>
+  <div class="math-container">\[ \int_{-1}^{1}x^{101} \, dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#r16_6" class="back-btn" onclick="clearAllTimers()">Back to Q6</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+  </div>
+  <div class="solution-text">0</div>
+</div>
+
+<!-- R16 Q7 -->
+<div id="r16_7" class="slide">
+  <h2>Round of 16 - Question 7</h2>
+  <div class="math-container">\[ \int_{-1}^{1}(x^{3}-x)^{2}dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#tb_r16_7" class="tiebreaker-btn" onclick="clearAllTimers()">Tie Breaker</a>
+  </div>
+  <div class="solution-text">16/105</div>
+</div>
+<!-- TB R16 7 -->
+<div id="tb_r16_7" class="slide">
+  <h2 class="tiebreaker-title">Tie Breaker</h2>
+  <div class="math-container">\[ \int \frac{\ln(\sin x)\cos x}{\sin x} \, dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#r16_7" class="back-btn" onclick="clearAllTimers()">Back to Q7</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+  </div>
+  <div class="solution-text">(ln sin x)^2 / 2</div>
+</div>
+
+<!-- R16 Q8 -->
+<div id="r16_8" class="slide">
+  <h2>Round of 16 - Question 8</h2>
+  <div class="math-container">\[ \int \sin(\sqrt{2026x})dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#tb_r16_8" class="tiebreaker-btn" onclick="clearAllTimers()">Tie Breaker</a>
+  </div>
+  <div class="solution-text">[sin(sqrt(2026x)) - sqrt(2026x)*cos(sqrt(2026x))]/1013</div>
+</div>
+<!-- TB R16 8 -->
+<div id="tb_r16_8" class="slide">
+  <h2 class="tiebreaker-title">Tie Breaker</h2>
+  <div class="math-container">\[ \int\frac{3x+5}{(x+1)(x+2)} \, dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#r16_8" class="back-btn" onclick="clearAllTimers()">Back to Q8</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+  </div>
+  <div class="solution-text">2 ln|x+1| + ln|x+2|</div>
+</div>
+
+
+<!-- ======================= QUARTER FINALS ======================= -->
+<!-- QF Q1 -->
+<div id="qf_1" class="slide">
+  <h2>Quarter Final - Question 1</h2>
+  <div class="math-container">\[ \int (1+\log x)\log (\log x) dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#tb_qf_1" class="tiebreaker-btn" onclick="clearAllTimers()">Tie Breaker</a>
+  </div>
+  <div class="solution-text">\[ x \log x \log(\log x) - x \]</div>
+</div>
+<!-- TB QF 1 -->
+<div id="tb_qf_1" class="slide">
+  <h2 class="tiebreaker-title">Tie Breaker</h2>
+  <div class="math-container">\[ \int\frac{x+2}{x^2+3x+2} \, dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#qf_1" class="back-btn" onclick="clearAllTimers()">Back to Q1</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+  </div>
+  <div class="solution-text">ln|x+1|</div>
+</div>
+
+<!-- QF Q2 -->
+<div id="qf_2" class="slide">
+  <h2>Quarter Final - Question 2</h2>
+  <div class="math-container">\[ \int\frac{\sin(2x)-\sin^{2}x}{\cos(2x)-\cos^{2}x}dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#tb_qf_2" class="tiebreaker-btn" onclick="clearAllTimers()">Tie Breaker</a>
+  </div>
+  <div class="solution-text">x - 2 log|sin x|</div>
+</div>
+<!-- TB QF 2 -->
+<div id="tb_qf_2" class="slide">
+  <h2 class="tiebreaker-title">Tie Breaker</h2>
+  <div class="math-container">\[ \int\frac{1}{x^2-4} \, dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#qf_2" class="back-btn" onclick="clearAllTimers()">Back to Q2</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+  </div>
+  <div class="solution-text">(1/4) ln|(x-2)/(x+2)|</div>
+</div>
+
+<!-- QF Q3 -->
+<div id="qf_3" class="slide">
+  <h2>Quarter Final - Question 3</h2>
+  <div class="math-container">\[ \int(x+\sin(x)+x \cos(x)+\sin(x)\cos(x))dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#tb_qf_3" class="tiebreaker-btn" onclick="clearAllTimers()">Tie Breaker</a>
+  </div>
+  <div class="solution-text">(x + sin x)^2 / 2</div>
+</div>
+<!-- TB QF 3 -->
+<div id="tb_qf_3" class="slide">
+  <h2 class="tiebreaker-title">Tie Breaker</h2>
+  <div class="math-container">\[ \int\frac{2x+1}{x^2+x-2} \, dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#qf_3" class="back-btn" onclick="clearAllTimers()">Back to Q3</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+  </div>
+  <div class="solution-text">ln|x^2+x-2|</div>
+</div>
+
+<!-- QF Q4 -->
+<div id="qf_4" class="slide">
+  <h2>Quarter Final - Question 4</h2>
+  <div class="math-container">\[ \int(\cos^{4}(2026x)-\sin^{4}(2026x))dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#tb_qf_4" class="tiebreaker-btn" onclick="clearAllTimers()">Tie Breaker</a>
+  </div>
+  <div class="solution-text">sin(4052x)/4052</div>
+</div>
+<!-- TB QF 4 -->
+<div id="tb_qf_4" class="slide">
+  <h2 class="tiebreaker-title">Tie Breaker</h2>
+  <div class="math-container">\[ \int \frac{2x}{\sqrt{1+x^2}} \, dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#qf_4" class="back-btn" onclick="clearAllTimers()">Back to Q4</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+  </div>
+  <div class="solution-text">2 sqrt(1+x^2)</div>
+</div>
+
+
+<!-- ======================= SEMI FINALS ======================= -->
+<!-- SF Q1 -->
+<div id="sf_1" class="slide">
+  <h2>Semi Final - Question 1</h2>
+  <div class="math-container">\[ \int\frac{(x-2026)^{\log(x+2026)}}{(x+2026)^{\log(x-2026)}}dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#tb_sf_1" class="tiebreaker-btn" onclick="clearAllTimers()">Tie Breaker</a>
+  </div>
+  <div class="solution-text">x   (if x > 2026)</div>
+</div>
+<!-- TB SF 1 -->
+<div id="tb_sf_1" class="slide">
+  <h2 class="tiebreaker-title">Tie Breaker</h2>
+  <div class="math-container">\[ \int \frac{x}{\sqrt{a+x^2}} \, dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#sf_1" class="back-btn" onclick="clearAllTimers()">Back to Q1</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+  </div>
+  <div class="solution-text">sqrt(a+x^2)</div>
+</div>
+
+<!-- SF Q2 -->
+<div id="sf_2" class="slide">
+  <h2>Semi Final - Question 2</h2>
+  <div class="math-container">\[ \int_{0}^{1}\tan^{-1}(x^{2}-x+1)\,dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#tb_sf_2" class="tiebreaker-btn" onclick="clearAllTimers()">Tie Breaker</a>
+  </div>
+  <div class="solution-text">ln 2</div>
+</div>
+<!-- TB SF 2 -->
+<div id="tb_sf_2" class="slide">
+  <h2 class="tiebreaker-title">Tie Breaker</h2>
+  <div class="math-container">\[ \int \frac{f'(x)}{1+f(x)^2} \, dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#sf_2" class="back-btn" onclick="clearAllTimers()">Back to Q2</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+  </div>
+  <div class="solution-text">tan^-1(f(x))</div>
+</div>
+
+
+<!-- ======================= FINAL (BEST OF 3) ======================= -->
+<!-- Final Game 1 -->
+<div id="final_1" class="slide">
+  <h2>Final - Game 1</h2>
+  <div class="math-container">\[ \int \tan x\sqrt{2+\sqrt{4+\cos x}}\,dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+  </div>
+  <div class="solution-text">\[ 2\ln\left|\frac{t+2}{t-2}\right| - 4t, \quad t=\sqrt{2+\sqrt{4+\cos x}} \]</div>
+</div>
+
+<!-- Final Game 2 -->
+<div id="final_2" class="slide">
+  <h2>Final - Game 2</h2>
+  <div class="math-container">\[ \int_{0}^{\infty}\frac{\ln(2e^{x}-1)}{e^{x}-1}\,dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+  </div>
+  <div class="solution-text">\[ \frac{\pi^2}{4} \]</div>
+</div>
+
+<!-- Final Game 3 -->
+<div id="final_3" class="slide">
+  <h2>Final - Game 3</h2>
+  <div class="math-container">\[ \lim_{n\to\infty}\int_{0}^{1}\sum_{k=1}^{n}\frac{1}{nx^{2}+kx+n}\,dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+  </div>
+  <div class="solution-text">\[ \frac{5\pi^2}{72} \]</div>
+</div>
+
+<!-- ======================= GENERAL TIE-BREAKERS ======================= -->
+<!-- General TB 1 -->
+<div id="general_tb_1" class="slide">
+  <h2 class="tiebreaker-title">Reserve Tie Breaker 1</h2>
+  <div class="math-container">\[ \int \frac{x^2+1}{x^3+3x} \, dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+  </div>
+  <div class="solution-text">(1/3) ln|x^3+3x|</div>
+</div>
+
+<!-- General TB 2 -->
+<div id="general_tb_2" class="slide">
+  <h2 class="tiebreaker-title">Reserve Tie Breaker 2</h2>
+  <div class="math-container">\[ \int_0^1\frac{x}{1+x^2} \, dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+  </div>
+  <div class="solution-text">(ln 2)/2</div>
+</div>
+
+<!-- General TB 3 -->
+<div id="general_tb_3" class="slide">
+  <h2 class="tiebreaker-title">Reserve Tie Breaker 3</h2>
+  <div class="math-container">\[ \int \frac{e^x}{1+e^x} \, dx \]</div>
+  <div class="timer-container">
+    <div class="timer-display">04:00.00</div>
+    <div class="timer-controls">
+      <button class="start" onclick="startTimer(this)">Start</button>
+      <button class="stop" onclick="stopTimer()">Stop</button>
+      <button class="reset" onclick="resetTimer(this)">Reset</button>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <a href="#selection" class="back-btn" onclick="clearAllTimers()">Return to Grid</a>
+    <button class="solution-btn" onclick="toggleSolution(this)">Solution</button>
+  </div>
+  <div class="solution-text">ln(1+e^x)</div>
+</div>
+
+<!-- Scripts -->
+<script>
+  // Tab Switching Logic
+  function switchTab(round) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    document.querySelectorAll('.grid-container').forEach(grid => grid.classList.remove('active'));
+    document.getElementById('grid-' + round).classList.add('active');
+  }
+
+  // Timer Logic
+  let timerInterval;
+  let startTime = 0;
+  let elapsedTime = 0;
+  let isRunning = false;
+  const TIME_LIMIT = 4 * 60 * 1000; 
+
+  function updateDisplay(displayElement, timeRemaining) {
+    if (timeRemaining < 0) timeRemaining = 0;
+    
+    let totalSeconds = Math.floor(timeRemaining / 1000);
+    let minutes = Math.floor(totalSeconds / 60);
+    let seconds = totalSeconds % 60;
+    let decimals = Math.floor((timeRemaining % 1000) / 10);
+    
+    displayElement.textContent = 
+      (minutes < 10 ? "0" + minutes : minutes) + ":" + 
+      (seconds < 10 ? "0" + seconds : seconds) + "." + 
+      (decimals < 10 ? "0" + decimals : decimals);
+  }
+
+  function startTimer(btn) {
+    if (isRunning) return;
+    isRunning = true;
+    startTime = Date.now() - elapsedTime;
+    let display = btn.parentElement.previousElementSibling;
+    
+    timerInterval = setInterval(() => {
+      elapsedTime = Date.now() - startTime;
+      let timeRemaining = TIME_LIMIT - elapsedTime;
+      
+      if (timeRemaining <= 0) {
+        timeRemaining = 0;
+        stopTimer();
+      }
+      
+      updateDisplay(display, timeRemaining);
+    }, 10);
+  }
+
+  function stopTimer() {
+    isRunning = false;
+    clearInterval(timerInterval);
+  }
+
+  function resetTimer(btn) {
+    stopTimer();
+    elapsedTime = 0;
+    let display = btn.parentElement.previousElementSibling;
+    updateDisplay(display, TIME_LIMIT);
+  }
+
+  function clearAllTimers() {
+    stopTimer();
+    elapsedTime = 0;
+    document.querySelectorAll('.timer-display').forEach(el => {
+      el.textContent = "04:00.00";
+    });
+    // Hide all solutions and reset buttons on navigation
+    document.querySelectorAll('.solution-text').forEach(el => el.classList.remove('visible'));
+    document.querySelectorAll('.solution-btn').forEach(el => el.textContent = 'Solution');
+  }
+
+  // Solution Toggle Logic
+  function toggleSolution(btn) {
+    const sol = btn.closest('.slide').querySelector('.solution-text');
+    if (sol.classList.contains('visible')) {
+      sol.classList.remove('visible');
+      btn.textContent = 'Solution';
+    } else {
+      sol.classList.add('visible');
+      btn.textContent = 'Hide Solution';
+    }
+  }
+
+  // Slide Navigation Logic (Prevents scrolling and hides unused views)
+  function showSlide(slideId) {
+    // Hide all slides
+    document.querySelectorAll('.slide').forEach(el => el.classList.remove('active-slide'));
+    
+    // Show target slide or selection grid if missing
+    const target = document.getElementById(slideId);
+    if (target) {
+      target.classList.add('active-slide');
+    } else {
+      document.getElementById('selection').classList.add('active-slide');
+    }
+  }
+
+  // Listen for hash changes (e.g. clicking "Return to Grid" or "Tie Breaker")
+  window.addEventListener('hashchange', () => {
+    const hash = window.location.hash ? window.location.hash.substring(1) : 'selection';
+    showSlide(hash);
+  });
+
+  // Run on page load to display correct initial view
+  window.addEventListener('DOMContentLoaded', () => {
+    const hash = window.location.hash ? window.location.hash.substring(1) : 'selection';
+    showSlide(hash);
+  });
+</script>
+
+</body>
+</html>
